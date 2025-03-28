@@ -1,8 +1,9 @@
-import {Telegraf, session, Scenes} from "telegraf";
+import { Telegraf, session, Scenes } from "telegraf";
 import dotenv from "dotenv";
-import {greetings, what_I_need} from "./assets/text.js";
-import {menu} from "./functions/menu.js";
-import {createPost} from "./functions/createPost.js";
+import { greetings, what_I_need } from "./assets/text.js";
+import { menu } from "./functions/menu.js";
+import { createPost } from "./functions/createPost.js";
+import handleTelegramError from "./functions/handlerTelegramError.js";
 
 dotenv.config();
 
@@ -14,19 +15,23 @@ const stage = new Scenes.Stage([createPost]);
 bot.use(stage.middleware());
 
 bot.start(async (ctx) => {
-  [greetings, what_I_need].map(async (el) => await ctx.reply(el));
-  await menu(ctx)
+  try {
+    await ctx.reply(greetings);
+    await ctx.reply(what_I_need);
+    await menu(ctx);
+  } catch (err) {
+    handleTelegramError(err, ctx);
+  }
 });
 
 bot.hears("Створити пост", (ctx) => ctx.scene.enter("postScene"));
 
 bot.catch((err, ctx) => {
   console.error(`Error in ${ctx.updateType}`, err);
-  ctx.reply("❌ Будь-ласка спробуйте пізніше.");
+  handleTelegramError(err, ctx);
 });
 
-bot.launch()
-  .catch((err) => console.error("Error:", err));
+bot.launch().catch((err) => console.error("Error:", err));
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));

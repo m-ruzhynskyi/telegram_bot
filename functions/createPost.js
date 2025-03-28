@@ -1,99 +1,146 @@
-import {Scenes, Markup} from "telegraf";
-import {create_post_text} from "../assets/text.js";
+import {Scenes, Markup, session} from "telegraf";
+import { create_post_text } from "../assets/text.js";
+import handleTelegramError from "./handlerTelegramError.js";
 
-const [title, price, article, mark, description, link] = Object.values(create_post_text);
+const [title, price, article, mark, description, link, hashtags] = Object.values(create_post_text);
 
 export const createPost = new Scenes.WizardScene(
-    'postScene',
+  "postScene",
 
-    //  Title
-    (ctx) => {
-      ctx.reply(title);
+  // Title
+  async (ctx) => {
+    try {
+      await ctx.reply(title);
       return ctx.wizard.next();
+    } catch (err) {
+      handleTelegramError(err, ctx);
+    }
+  },
 
-    },
-    // Price
-    (ctx) => {
+  // Price
+  async (ctx) => {
+    try {
       ctx.session.postData = ctx.session.postData || {};
       ctx.session.postData.title = ctx.message.text;
-      ctx.reply(price);
+      await ctx.reply(price);
       return ctx.wizard.next();
-    },
+    } catch (err) {
+      handleTelegramError(err, ctx);
+    }
+  },
 
-    // Price Validation and Mark Prompt
-    (ctx) => {
+  // Price Validation and Mark Prompt
+  async (ctx) => {
+    try {
       const priceValue = parseInt(ctx.message.text);
 
       if (isNaN(priceValue)) {
-        ctx.reply("❌ Ціна повинна бути числом! Спробуйте ще раз:");
+        await ctx.reply("❌ Ціна повинна бути числом! Спробуйте ще раз:");
         return;
       }
 
       ctx.session.postData.price = priceValue;
-      ctx.reply(article);
+      await ctx.reply(article);
       return ctx.wizard.next();
-    },
+    } catch (err) {
+      handleTelegramError(err, ctx);
+    }
+  },
 
-    // Article
-    (ctx) => {
+  // Article
+  async (ctx) => {
+    try {
       const articleValue = parseInt(ctx.message.text);
 
       if (isNaN(articleValue)) {
-        ctx.reply("❌ Артикул повинен бути числом! Спробуйте ще раз:");
+        await ctx.reply("❌ Артикул повинен бути числом! Спробуйте ще раз:");
         return;
       }
 
       ctx.session.postData.article = ctx.message.text;
-      ctx.reply(
+      await ctx.reply(
         mark,
         Markup.inlineKeyboard([
-          [Markup.button.callback("🆒", "🆒"), Markup.button.callback("⚠️", "⚠️")],
-          [Markup.button.callback("🆗", "🆗"), Markup.button.callback("🆕", "🆕")],
+          [
+            Markup.button.callback("🆒", "🆒"),
+            Markup.button.callback("⚠️", "⚠️"),
+          ],
+          [
+            Markup.button.callback("🆗", "🆗"),
+            Markup.button.callback("🆕", "🆕"),
+          ],
         ])
       );
       return ctx.wizard.next();
-    },
+    } catch (err) {
+      handleTelegramError(err, ctx);
+    }
+  },
 
-    // Description
-    (ctx) => {
+  // Description
+  async (ctx) => {
+    try {
       if (!ctx.callbackQuery) {
-        ctx.reply("❌ Виберіть з запропонованих варіантів! Спробуйте ще раз:");
+        await ctx.reply("❌ Виберіть з запропонованих варіантів! Спробуйте ще раз:");
         return;
       }
 
       ctx.session.postData.mark = ctx.callbackQuery.data;
-      ctx.reply(description);
+      await ctx.reply(description);
       return ctx.wizard.next();
+    } catch (err) {
+      handleTelegramError(err, ctx);
     }
-    ,
+  },
 
-    // Link
-    (ctx) => {
+  // Link
+  async (ctx) => {
+    try {
       ctx.session.postData.description = ctx.message.text;
-      ctx.reply(link);
+      await ctx.reply(link);
       return ctx.wizard.next();
-    },
+    } catch (err) {
+      handleTelegramError(err, ctx);
+    }
+  },
 
-    // Handle Mark Selection and Finish
-    (async (ctx) => {
-      ctx.session.postData.link = ctx.message.text;
+  async (ctx) => {
+    try {
+      ctx.session.postData.link = ctx.message.link
+      await ctx.reply(hashtags)
+      return ctx.wizard.next();
+    } catch (error) {
+      handleTelegramError(error, ctx);
+    }
+  },
+
+  // Handle Mark Selection and Finish
+  async (ctx) => {
+    try {
+      ctx.session.postData.hashtags = ctx.message.text.split(' ').map(tag => '#' + tag).join(' ');
       const post = ctx.session.postData;
 
-      await ctx.reply('✅ Твій пост створено !')
+      await ctx.reply("✅ Твій пост створено !");
       await ctx.replyWithHTML(
         `<b>${post.title}</b>\n\n` +
-        `💰 Ціна: ${post.price} грн\n` +
-        `📌 Артикул: ${post.article}\n` +
-        `${post.mark} Уцінка: ${post.description}\n\n` +
-        `➡️ <a href="${post.link}"><u>Опис товару на сайті</u></a> ⬅️`,
+          `💰 Ціна: ${post.price} грн\n` +
+          `📌 Артикул: ${post.article}\n` +
+          `${post.mark} Уцінка: ${post.description}\n\n` +
+          `➡️ <a href="${post.link}"><u>Опис товару на сайті</u></a> ⬅️\n\n` +
+          `Для запитань:\n` +
+          `📞 <a href="tel:+380442470786">+380442470786</a>\n` +
+          `✉️ <a href="https://jysk.ua/customer-service-category/13152?question=ka07T000000c2JBQAY#service-category-ka07T000000c2JBQAY"><u>Написати лист</u></a>\n\n` +
+          `#JYSK #Outlet #Знижка ${post.hashtags}`,
         {
           disable_web_page_preview: true
         }
       );
 
-
       delete ctx.session.postData;
       return ctx.scene.leave();
-    })
-  )
-;
+    } catch (err) {
+      handleTelegramError(err, ctx);
+    }
+  }
+)
+
