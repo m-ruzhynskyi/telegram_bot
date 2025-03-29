@@ -1,13 +1,13 @@
-import { Telegraf, session, Scenes } from "telegraf";
+import {Telegraf, session, Scenes} from "telegraf";
 import dotenv from "dotenv";
-import { greetings, what_I_need } from "./assets/text.js";
-import { menu } from "./functions/menu.js";
-import { createPost } from "./functions/createPost.js";
+import {greetings, what_I_need} from "./assets/text.js";
+import {menu} from "./functions/menu.js";
+import {createPost} from "./functions/createPost.js";
 import handleTelegramError from "./functions/handlerTelegramError.js";
 
 dotenv.config();
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+export const bot = new Telegraf(process.env.BOT_TOKEN);
 
 bot.use(session());
 
@@ -24,7 +24,13 @@ bot.start(async (ctx) => {
   }
 });
 
-bot.hears("Створити пост", (ctx) => ctx.scene.enter("postScene"));
+bot.hears("Створити пост", async (ctx) => {
+  try {
+    await ctx.scene.enter("postScene")
+  } catch (err) {
+    handleTelegramError(err, ctx);
+  }
+});
 
 bot.catch((err, ctx) => {
   console.error(`Error in ${ctx.updateType}`, err);
