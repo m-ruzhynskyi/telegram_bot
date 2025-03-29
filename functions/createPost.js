@@ -1,6 +1,7 @@
 import {Scenes, Markup, session} from "telegraf";
 import { create_post_text } from "../assets/text.js";
 import handleTelegramError from "./handlerTelegramError.js";
+import postMessageBuilder from "./postMessageBuilder.js";
 
 const [title, price, article, mark, description, link, hashtags] = Object.values(create_post_text);
 
@@ -93,7 +94,7 @@ export const createPost = new Scenes.WizardScene(
     }
   },
 
-  // Link
+  // Description
   async (ctx) => {
     try {
       ctx.session.postData.description = ctx.message.text;
@@ -106,7 +107,7 @@ export const createPost = new Scenes.WizardScene(
 
   async (ctx) => {
     try {
-      ctx.session.postData.link = ctx.message.link
+      ctx.session.postData.link = ctx.message.text
       await ctx.reply(hashtags)
       return ctx.wizard.next();
     } catch (error) {
@@ -119,18 +120,8 @@ export const createPost = new Scenes.WizardScene(
     try {
       ctx.session.postData.hashtags = ctx.message.text.split(' ').map(tag => '#' + tag).join(' ');
       const post = ctx.session.postData;
-
       await ctx.reply("✅ Твій пост створено !");
-      await ctx.replyWithHTML(
-        `<b>${post.title}</b>\n\n` +
-          `💰 Ціна: ${post.price} грн\n` +
-          `📌 Артикул: ${post.article}\n` +
-          `${post.mark} Уцінка: ${post.description}\n\n` +
-          `➡️ <a href="${post.link}"><u>Опис товару на сайті</u></a> ⬅️\n\n` +
-          `Для запитань:\n` +
-          `📞 <a href="tel:+380442470786">+380442470786</a>\n` +
-          `✉️ <a href="https://jysk.ua/customer-service-category/13152?question=ka07T000000c2JBQAY#service-category-ka07T000000c2JBQAY"><u>Написати лист</u></a>\n\n` +
-          `#JYSK #Outlet #Знижка ${post.hashtags}`,
+      await ctx.replyWithHTML(postMessageBuilder(post),
         {
           disable_web_page_preview: true
         }
