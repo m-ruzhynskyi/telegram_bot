@@ -47,7 +47,7 @@ export const createPost = new Scenes.WizardScene(
         await ctx.reply(title);
         return ctx.wizard.next();
       } else {
-        await ctx.reply("Надішліть фото або напишіть \"✅ Готово\" чи \"готово\", якщо завершили.");
+        await ctx.reply("Надішліть фото або напишіть \"✅ Готово\", якщо завершили.");
       }
     } catch (err) {
       handleTelegramError(err, ctx);
@@ -70,12 +70,20 @@ export const createPost = new Scenes.WizardScene(
   async (ctx) => {
     try {
       if (await checkIsEnd(ctx)) return;
-      const priceValue = parseInt(ctx.message.text);
-      if (isNaN(priceValue)) {
+      const priceValue = ctx.message.text;
+      if (isNaN(parseInt(priceValue))) {
         await ctx.reply("❌ Ціна повинна бути числом! Спробуйте ще раз:");
         return;
       }
-      ctx.session.postData.price = priceValue;
+
+      if (+priceValue >= 10000) {
+        ctx.session.postData.price = `${priceValue.slice(0, 2)} ${priceValue.slice(2)}`;
+      } else if (+priceValue >= 1000) {
+        ctx.session.postData.price = `${priceValue[0]} ${priceValue.slice(1)}`;
+      } else {
+        ctx.session.postData.price = priceValue;
+      }
+
       await ctx.reply(article);
       return ctx.wizard.next();
     } catch (err) {
@@ -147,7 +155,7 @@ export const createPost = new Scenes.WizardScene(
   async (ctx) => {
     try {
       if (await checkIsEnd(ctx)) return;
-      ctx.session.postData.hashtags = ctx.message.text.split(' ').map(tag => '#' + tag).join(' ');
+      ctx.session.postData.hashtags = ctx.message.text;
       await ctx.reply("✅ Твій пост створено!");
       const post = ctx.session.postData;
 
