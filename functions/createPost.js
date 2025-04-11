@@ -1,4 +1,4 @@
-import { Scenes, Markup, session } from "telegraf";
+import { Scenes, Markup } from "telegraf";
 import {createPostText, productStatusObj} from "../assets/text.js";
 import handleTelegramError from "./handlerTelegramError.js";
 import postMessageBuilder from "./postMessageBuilder.js";
