@@ -1,12 +1,12 @@
 import { Scenes, Markup, session } from "telegraf";
-import { create_post_text } from "../assets/text.js";
+import {createPostText, productStatusObj} from "../assets/text.js";
 import handleTelegramError from "./handlerTelegramError.js";
 import postMessageBuilder from "./postMessageBuilder.js";
 import { bot } from "../index.js";
 import { menu } from "./menu.js";
 import checkIsEnd from "./checkIsEnd.js";
 
-const [title, price, article, mark, description, link, hashtags] = Object.values(create_post_text);
+const [title, price, article, mark,productStatus, description, link, hashtags] = Object.values(createPostText);
 
 export const createPost = new Scenes.WizardScene(
   "postScene",
@@ -120,13 +120,30 @@ export const createPost = new Scenes.WizardScene(
         return;
       }
       ctx.session.postData.mark = ctx.callbackQuery.data;
-      await ctx.reply(description);
+      await ctx.reply(productStatus, Markup.inlineKeyboard([
+        [Markup.button.callback('1️⃣', '1'), Markup.button.callback('2️⃣', '2'), Markup.button.callback('3️⃣', '3')]
+      ]));
       return ctx.wizard.next();
     } catch (err) {
       handleTelegramError(err, ctx);
     }
   },
 
+  // Product status
+  async (ctx) => {
+    try {
+      if (await checkIsEnd(ctx)) return;
+      if (!ctx.callbackQuery) {
+        await ctx.reply("❌ Виберіть з запропонованих варіантів! Спробуйте ще раз:");
+        return;
+      }
+      ctx.session.postData.productStatus = productStatusObj[ctx.callbackQuery.data];
+      await ctx.reply(description);
+      return ctx.wizard.next();
+    }catch (err) {
+      handleTelegramError(err, ctx);
+    }
+  },
   // Description
   async (ctx) => {
     try {

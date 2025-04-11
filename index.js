@@ -1,6 +1,6 @@
 import {Telegraf, session, Scenes} from "telegraf";
 import dotenv from "dotenv";
-import {greetings, what_I_need} from "./assets/text.js";
+import {greetings, whatINeed} from "./assets/text.js";
 import {menu} from "./functions/menu.js";
 import {createPost} from "./functions/createPost.js";
 import handleTelegramError from "./functions/handlerTelegramError.js";
@@ -17,7 +17,7 @@ bot.use(stage.middleware());
 bot.start(async (ctx) => {
   try {
     await ctx.reply(greetings);
-    await ctx.reply(what_I_need);
+    await ctx.reply(whatINeed);
     await menu(ctx);
   } catch (err) {
     handleTelegramError(err, ctx);

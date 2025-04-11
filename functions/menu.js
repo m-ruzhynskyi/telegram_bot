@@ -1,7 +1,7 @@
-import {post_continue_create, post_start_create} from "../assets/text.js";
+import {postContinueCreate, postStartCreate} from "../assets/text.js";
 
 export const menu = (ctx, is_ready = true) => {
-  ctx.reply(is_ready ? post_start_create: post_continue_create, {
+  ctx.reply(is_ready ? postStartCreate: postContinueCreate, {
     reply_markup: {
       keyboard: [
         ["Створити пост"]

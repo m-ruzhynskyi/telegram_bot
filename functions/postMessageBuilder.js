@@ -1,8 +1,8 @@
-export default function postMessageBuilder({title, price, article, mark, description, link, hashtags}) {
+export default function postMessageBuilder({title, price, article, mark, productStatus, description, link, hashtags}) {
   return `<b>${title}</b>\n\n` +
           `💰 Ціна: ${price} грн\n` +
           `📌 Артикул: ${article}\n` +
-          `${mark} Уцінка: ${description}\n\n` +
+          `${mark} Уцінка: ${productStatus} ${description}\n\n` +
           `➡️ <a href="${link}">Опис товару на сайті</a> ⬅️\n\n` +
           `Для запитань:\n` +
           `📞 <a href="tel:+380442470786">+380442470786</a>\n` +
